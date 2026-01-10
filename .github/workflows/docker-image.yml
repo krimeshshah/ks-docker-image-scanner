@@ -6,10 +6,9 @@ on:
   pull_request:
     branches: [ "develop" ]
 
-runs-on: ubuntu-latest
-
 jobs:
-
+  runs-on: ubuntu-latest
+  
   build:
 
     steps:
