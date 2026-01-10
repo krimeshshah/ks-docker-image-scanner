@@ -1,7 +1,7 @@
 FROM python:3.12-slim
 
 # Install system tools
-RUN apt-get update && apt-get install -y curl \
+RUN apt-get update && apt-get install -y curl --no-install-recommends\
     && rm -rf /var/lib/apt/lists/*
 
 # Install Syft & Grype
