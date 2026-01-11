@@ -9,13 +9,70 @@ on:
 jobs:
 
   build:
-
+    
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - uses: hadolint/hadolint-action@v3.1.0
-      with:
-        dockerfile: Dockerfile
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag docker-imagescan:$(date +%s)
+
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Detect Dockerfile changes
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            dockerfile:
+              - Dockerfile
+
+      - name: Run hadolint
+        if: steps.changes.outputs.dockerfile == 'true'
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+          failure-threshold: error
+
+      - name: setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      # - name: Run Unit test
+      #   run: |
+      #     pytest tests/
+
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag docker-imagescan:$(date +%s)
+
+      # - name: Setup kind cluster
+      #   uses: helm/kind-action@v1.10.0
+      #   with:
+      #     cluster_name: ci-cluster
+
+      # - name: Load image into kind
+      #   run: |
+      #     kind load docker-image fastapi-app:ci --name ci-cluster
+
+      # # Deploy app
+      # - name: Deploy to kind
+      #   run: |
+      #     kubectl apply -f k8s/
+      #     kubectl rollout status deployment/fastapi-deployment
+
+      # # Port forward
+      # - name: Port-forward FastAPI service
+      #   run: |
+      #     kubectl port-forward svc/fastapi-service 8000:8000 &
+      #     sleep 10
+
+      # # Smoke tests
+      # - name: Smoke test FastAPI
+      #   run: |
+      #     curl --fail http://localhost:8000/docs
+      #     curl --fail http://localhost:8000/health
