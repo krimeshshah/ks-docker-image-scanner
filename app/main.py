@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
 from collections import Counter
-from datetime import datetime
+from datetime import datetime, timezone
 
 import subprocess
 import json
@@ -98,7 +98,10 @@ def scan_image(image: str):
     """
     Scan a Docker image for SBOM and vulnerabilities.
     """
-    scan_time = datetime.utcnow().isoformat() + "Z"
+    datetime.now(timezone.utc)
+
+    timestamp = 1571595618.0
+    datetime.fromtimestamp(timestamp, timezone.utc) 
 
     # Run Syft and Grype
     sbom = run_cmd(["syft", image, "-o", "json"])
